@@ -1,0 +1,17 @@
+{
+  "name": "tmnt-halloween-visualizer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Real-time TMNT x Halloween audio visualizer for projecting from a MacBook",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.0.2"
+  }
+}
