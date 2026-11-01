@@ -1,6 +1,6 @@
 import type { AudioEngine } from './audio/engine';
 import { HorrorOverlay } from './fx/horror';
-import { drawScratchWaves } from './fx/waves';
+import { drawSpiders } from './fx/spiders';
 import type { Scene, SceneContext } from './scenes';
 
 /** Backing-store multipliers offered in the control panel and `?scale=`. */
@@ -155,7 +155,7 @@ export class Renderer {
     const sc: SceneContext = { ctx, w: this.w, h: this.h, audio, t: audio.time, dt: audio.dt };
     this.scene.draw(sc);
     this.horror.drawAtmosphere(ctx, this.w, this.h, audio.time);
-    drawScratchWaves(ctx, this.w, this.h, audio, audio.time);
+    drawSpiders(ctx, this.w, this.h, audio, audio.time);
     this.horror.drawGrade(ctx, this.w, this.h, audio.time);
 
     this.dwell += audio.dt;

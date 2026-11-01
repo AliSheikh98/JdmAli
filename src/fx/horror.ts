@@ -249,43 +249,7 @@ export class HorrorOverlay {
       ctx.fillRect(0, 0, w, h);
       return;
     }
-    ctx.fillStyle = `rgba(6,0,0,${0.88 * Math.min(1, a * 1.4)})`;
+    ctx.fillStyle = `rgba(12,0,2,${0.45 * Math.min(1, a * 1.4)})`;
     ctx.fillRect(0, 0, w, h);
-    const cx = w / 2;
-    const cy = h * 0.48;
-    const r = Math.min(w, h) * 0.28;
-    ctx.fillStyle = '#123018';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, r, r * 0.9, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.lineWidth = Math.max(6, r * 0.05);
-    ctx.strokeStyle = '#050805';
-    ctx.stroke();
-    for (const side of [-1, 1]) {
-      const x = cx + side * r * 0.38;
-      const y = cy - r * 0.08;
-      ctx.fillStyle = '#ff1a1a';
-      ctx.beginPath();
-      ctx.ellipse(x, y, r * 0.22, r * 0.16, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#fff6ea';
-      ctx.beginPath();
-      ctx.ellipse(x, y, r * 0.08, r * 0.1, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#140004';
-      ctx.beginPath();
-      ctx.arc(x, y, r * 0.035, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.fillStyle = '#1a0508';
-    ctx.beginPath();
-    ctx.moveTo(cx - r * 0.42, cy + r * 0.28);
-    for (let i = 0; i <= 7; i++) {
-      const px = cx - r * 0.42 + (i / 7) * r * 0.84;
-      const py = cy + r * 0.28 + (i % 2 === 0 ? 0 : r * 0.16);
-      ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-    ctx.fill();
   }
 }

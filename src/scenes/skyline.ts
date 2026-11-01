@@ -106,7 +106,7 @@ export class SkylineScene implements Scene {
     drawMoon(ctx, w * 0.8, h * 0.2, h * 0.1 + audio.bass * h * 0.02, audio.pulse, '#c45048');
 
     // Spectrum "aurora" behind the skyline
-    const barCount = 80;
+    const barCount = 48;
     const bw = w / barCount;
     for (let b = 0; b < barCount; b++) {
       const idx = Math.min(audio.bins - 1, Math.floor(Math.pow(b / barCount, 1.7) * audio.bins));

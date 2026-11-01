@@ -134,12 +134,12 @@ src/audio/beat.ts       Onset detection + BPM estimate
 src/audio/demo-synth.ts Procedural demo beat
 src/scenes/*.ts         The four scenes + shared procedural shapes/palette
 src/fx/horror.ts        Vignette, coarse grain, VHS tears, fog, drips, jump-scares
-src/fx/waves.ts         Big scratchy sine waves drawn over every scene
+src/fx/spiders.ts       Corner webs and spiders whose legs bounce on the beat
 src/ui/controls.ts      Buttons, keyboard, device picker, auto-hide, toasts
 ```
 
 All turtle, pumpkin, bat and skyline art is drawn procedurally in code; no
 third-party artwork or logos are embedded. The display font is Creepster
 (Google Fonts, SIL OFL), loaded from Google Fonts with Impact / system
-fallbacks when offline. Three large scratchy sine waves sit on top of every
-scene and punch with the beat.
+fallbacks when offline. Spiders sit on corner webs; their legs flex with
+the kick so the picture stays readable.
