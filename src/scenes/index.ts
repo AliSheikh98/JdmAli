@@ -3,9 +3,10 @@ import { TurtlesScene } from './turtles';
 import { SewerScene } from './sewer';
 import { SkylineScene } from './skyline';
 import { OozeScene } from './ooze';
+import { RedrumScene } from './redrum';
 
 export function createScenes(): Scene[] {
-  return [new TurtlesScene(), new SewerScene(), new SkylineScene(), new OozeScene()];
+  return [new TurtlesScene(), new SewerScene(), new SkylineScene(), new OozeScene(), new RedrumScene()];
 }
 
 export type { Scene, SceneContext } from './types';

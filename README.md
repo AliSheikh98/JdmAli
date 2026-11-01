@@ -30,11 +30,12 @@ npm run preview   # serves dist/ locally for a final check
 
 | Input | Action |
 | --- | --- |
-| `1` `2` `3` `4` or scene buttons | Switch scene: Turtles · Sewer · City · Ooze |
+| `1` `2` `3` `4` `5` or scene buttons | Switch scene: Turtles · Sewer · City · Ooze · Redrum |
+| (automatic) | Scenes advance every 40 s. Fights and the bow start on their own |
 | `Space` / `→` / `←` | Next / previous scene |
 | `F` or Fullscreen button | Toggle fullscreen |
 | `H` | Hide / show the control panel (`Esc` shows it again) |
-| `X` | Start a fight interlude now |
+| `X` | Start a fight now (fights also start by themselves) |
 | `G` | Toggle automatic fights |
 | `S` | Master Splinter enters; turtles and enemies bow |
 | Fights slider | How often automatic fights start, from 45 s to 90 s. A long loud stretch can start one sooner |

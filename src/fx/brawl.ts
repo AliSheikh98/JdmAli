@@ -80,8 +80,8 @@ const RED_WORDS = ['THWACK', 'POW', 'WHAM'];
 const GREEN_WORDS = ['SPLAT', 'SPLAT', 'THWACK'];
 const FIGHT_LEN = 10;
 const SPLINTER_LEN = 10;
-const MIN_GAP = 18;
-const SPLINTER_EVERY = 150;
+const MIN_GAP = 12;
+const SPLINTER_EVERY = 110;
 
 const GRAVITY = 1700;
 
@@ -100,8 +100,8 @@ export class Brawl {
   private h = 1;
   private ground = 0;
   private modeT = 0;
-  private fightTimer = 60;
-  private splinterTimer = SPLINTER_EVERY;
+  private fightTimer = 22;
+  private splinterTimer = 70;
   private sinceFight = 999;
   private energyHold = 0;
   private turtlesStrike = true;
@@ -181,7 +181,7 @@ export class Brawl {
     else this.energyHold = Math.max(0, this.energyHold - dt * 0.5);
 
     if (this.mode === 'off') {
-      if (this.fightsEnabled && this.sinceFight > MIN_GAP && (this.fightTimer <= 0 || this.energyHold > 5.5)) {
+      if (this.fightsEnabled && this.sinceFight > MIN_GAP && (this.fightTimer <= 0 || this.energyHold > 3)) {
         this.startFight();
       } else if (this.splinterTimer <= 0) {
         this.startSplinter();

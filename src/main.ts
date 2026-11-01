@@ -18,6 +18,7 @@ if (params.get('force1080') === '1' || params.get('hd') === '1' || params.get('b
 }
 const sceneParam = Number(params.get('scene'));
 if (sceneParam >= 1 && sceneParam <= renderer.sceneCount) renderer.setScene(sceneParam - 1);
+else renderer.setScene(renderer.sceneCount - 1);
 
 const controls = new Controls(audio, renderer);
 const sourceParam = params.get('source');

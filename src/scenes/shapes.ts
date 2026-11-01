@@ -346,7 +346,7 @@ export function drawLightning(
   y1: number,
   rand: () => number,
   width: number,
-  color = PALETTE.acid,
+  color: string = PALETTE.acid,
   depth = 0,
 ): void {
   const segments = 10 + Math.floor(rand() * 6);

@@ -38,6 +38,9 @@ export class Renderer {
   private raf = 0;
   private frames = 0;
   private fpsTime = 0;
+  private dwell = 0;
+  /** Scenes advance on their own so the party never has to pick one. */
+  private readonly dwellEvery = 40;
   fps = 0;
   onSceneChange: ((index: number, scene: Scene) => void) | null = null;
   onFps: ((fps: number) => void) | null = null;
@@ -116,6 +119,7 @@ export class Renderer {
   setScene(i: number): void {
     const next = ((i % this.scenes.length) + this.scenes.length) % this.scenes.length;
     if (next === this.index && this.raf) return;
+    this.dwell = 0;
     this.index = next;
     this.scene.resize?.(this.w, this.h);
     this.scene.enter?.();
@@ -180,6 +184,14 @@ export class Renderer {
     if (this.brawl.mode === 'off') this.horror.drawAtmosphere(ctx, this.w, this.h, audio.time);
     this.brawl.draw(ctx, this.w, this.h, audio, audio.time);
     this.horror.drawGrade(ctx, this.w, this.h, audio.time);
+
+    if (this.brawl.mode === 'off') {
+      this.dwell += audio.dt;
+      if (this.dwell >= this.dwellEvery) {
+        this.dwell = 0;
+        this.nextScene();
+      }
+    }
 
     this.frames++;
     if (now - this.fpsTime >= 1000) {
