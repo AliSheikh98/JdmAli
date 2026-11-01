@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="TMNT x Halloween real-time audio visualizer" />
+    <title>Shellraiser — TMNT Halloween Visualizer</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%2339b54a'/%3E%3Crect x='6' y='24' width='52' height='14' rx='4' fill='%23ff7a00'/%3E%3Cellipse cx='23' cy='31' rx='6' ry='4' fill='%23fff'/%3E%3Cellipse cx='41' cy='31' rx='6' ry='4' fill='%23fff'/%3E%3C/svg%3E" />
+    <!-- Free Google font (SIL OFL). Falls back to Impact / system fonts when offline. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Bangers&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <canvas id="stage" aria-label="Audio visualizer"></canvas>
+
+    <!-- Start gate: satisfies browser autoplay / mic-permission policy with a user gesture -->
+    <section id="gate" class="gate">
+      <div class="gate-card">
+        <h1 class="title">Shellraiser</h1>
+        <p class="subtitle">TMNT &times; Halloween audio visualizer</p>
+        <div class="gate-sources">
+          <button id="gate-mic" class="btn btn-big btn-orange" type="button">
+            Start with microphone / line-in
+          </button>
+          <button id="gate-file" class="btn btn-big btn-purple" type="button">
+            Start with an audio file
+          </button>
+          <button id="gate-demo" class="btn btn-big btn-green" type="button">
+            Start demo beat (no mic needed)
+          </button>
+        </div>
+        <p class="hint">
+          Your browser will ask for microphone permission. Choose the input device in the control
+          panel afterwards. Scenes advance on their own. Press <kbd>F</kbd> for fullscreen.
+        </p>
+        <p id="gate-error" class="error" role="alert" hidden></p>
+      </div>
+    </section>
+
+    <!-- Control panel: auto-hides when the mouse is idle -->
+    <aside id="panel" class="panel" aria-label="Controls">
+      <header class="panel-head">
+        <span class="panel-title">Shellraiser</span>
+        <span id="fps" class="fps" title="Frames per second">-- fps</span>
+      </header>
+
+      <div class="group">
+        <label class="label">Scene</label>
+        <div id="scene-buttons" class="row"></div>
+      </div>
+
+      <div class="group">
+        <label class="label" for="source-select">Audio source</label>
+        <select id="source-select" class="select">
+          <option value="mic">Microphone / line-in</option>
+          <option value="file">Audio file</option>
+          <option value="demo">Demo beat (synthetic)</option>
+        </select>
+      </div>
+
+      <div id="device-group" class="group">
+        <label class="label" for="device-select">Input device</label>
+        <select id="device-select" class="select"></select>
+      </div>
+
+      <div id="file-group" class="group" hidden>
+        <label class="label" for="file-input">Audio file</label>
+        <input id="file-input" class="file" type="file" accept="audio/*" />
+        <div class="row">
+          <button id="file-play" class="btn btn-small" type="button">Play / Pause</button>
+          <span id="file-name" class="muted">No file loaded</span>
+        </div>
+      </div>
+
+      <div class="group">
+        <label class="label" for="gain">Sensitivity <span id="gain-value" class="muted">1.0×</span></label>
+        <input id="gain" class="slider" type="range" min="0.2" max="4" step="0.1" value="1" />
+      </div>
+
+      <div class="group">
+        <label class="label" for="render-scale">Render scale</label>
+        <select id="render-scale" class="select">
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+        </select>
+        <label class="check" for="force-1080">
+          <input id="force-1080" type="checkbox" />
+          Force 1920×1080 backing
+        </label>
+      </div>
+
+      <div class="group row">
+        <button id="fullscreen" class="btn btn-small" type="button" title="Toggle fullscreen (F)">
+          Fullscreen (F)
+        </button>
+        <button id="hide-ui" class="btn btn-small" type="button" title="Hide controls (H)">
+          Hide UI (H)
+        </button>
+      </div>
+
+      <footer class="panel-foot">
+        <span><kbd>1</kbd>–<kbd>4</kbd> scenes</span>
+        <span><kbd>Space</kbd> next</span>
+        <span><kbd>F</kbd> fullscreen</span>
+        <span><kbd>H</kbd> hide</span>
+      </footer>
+    </aside>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
