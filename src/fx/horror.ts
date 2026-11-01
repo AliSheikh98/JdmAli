@@ -109,7 +109,7 @@ export class HorrorOverlay {
     }
   }
 
-  /** Fog, eyes, drips, beat blackout, jump-scare. Skip while a brawl covers the frame. */
+  /** Fog, eyes, drips, beat blackout, and the jump-scare. */
   drawAtmosphere(ctx: CanvasRenderingContext2D, w: number, h: number, t: number): void {
     this.drawFog(ctx, w, h, t);
     this.drawEyes(ctx, t);
