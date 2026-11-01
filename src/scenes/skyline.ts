@@ -1,5 +1,5 @@
 import type { Scene, SceneContext } from './types';
-import { DISPLAY_FONT, PALETTE, TURTLES, rgba, mulberry32, clamp01 } from './palette';
+import { PALETTE, TURTLES, paintTitle, rgba, mulberry32, clamp01 } from './palette';
 import { drawBat, drawLightning, drawMoon, drawPumpkin, drawTurtleHead } from './shapes';
 
 interface Building {
@@ -85,9 +85,9 @@ export class SkylineScene implements Scene {
 
     // Sky
     const sky = ctx.createLinearGradient(0, 0, 0, h);
-    sky.addColorStop(0, `rgb(${Math.floor(12 + this.flash * 60)},${Math.floor(4 + this.flash * 40)},${Math.floor(24 + this.flash * 90)})`);
-    sky.addColorStop(0.55, `rgb(${Math.floor(59 + this.flash * 50)},${Math.floor(10 + this.flash * 40)},${Math.floor(94 + this.flash * 60)})`);
-    sky.addColorStop(1, '#1a0a26');
+    sky.addColorStop(0, `rgb(${Math.floor(8 + this.flash * 50)},${Math.floor(2 + this.flash * 8)},${Math.floor(10 + this.flash * 16)})`);
+    sky.addColorStop(0.55, `rgb(${Math.floor(32 + this.flash * 70)},${Math.floor(4 + this.flash * 10)},${Math.floor(16 + this.flash * 18)})`);
+    sky.addColorStop(1, '#10060c');
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, w, h);
 
@@ -99,11 +99,11 @@ export class SkylineScene implements Scene {
       const sy = rand() * h * 0.5;
       const tw = 0.3 + 0.7 * Math.abs(Math.sin(t * (1 + rand() * 3) + rand() * 6));
       ctx.globalAlpha = tw * (0.4 + audio.treble * 0.6);
-      ctx.fillRect(sx, sy, 2, 2);
+      ctx.fillRect(sx, sy, 3, 3);
     }
     ctx.globalAlpha = 1;
 
-    drawMoon(ctx, w * 0.8, h * 0.2, h * 0.09 + audio.bass * h * 0.015, audio.pulse);
+    drawMoon(ctx, w * 0.8, h * 0.2, h * 0.1 + audio.bass * h * 0.02, audio.pulse, '#c45048');
 
     // Spectrum "aurora" behind the skyline
     const barCount = 80;
@@ -114,7 +114,7 @@ export class SkylineScene implements Scene {
       const bh = v * h * 0.45;
       const grad = ctx.createLinearGradient(0, h * 0.78 - bh, 0, h * 0.78);
       grad.addColorStop(0, rgba(PALETTE.acid, 0));
-      grad.addColorStop(1, rgba(b % 2 ? PALETTE.purple : PALETTE.orange, 0.35 + v * 0.4));
+      grad.addColorStop(1, rgba(b % 2 ? PALETTE.blood : PALETTE.orange, 0.4 + v * 0.45));
       ctx.fillStyle = grad;
       ctx.fillRect(b * bw, h * 0.78 - bh, bw + 1, bh);
     }
@@ -176,26 +176,27 @@ export class SkylineScene implements Scene {
           if (lv < 0.03) continue;
           const wx = b.x + (b.w / b.cols) * (c + 0.25);
           const wy = top + (b.h / b.rows) * (r + 0.25);
-          ctx.fillStyle = rgba(rowFromBottom % 3 === 2 ? PALETTE.acid : PALETTE.orange, 0.25 + lv * 0.75);
-          ctx.fillRect(wx, wy, winW, winH);
+          ctx.fillStyle = rgba(rowFromBottom % 3 === 2 ? PALETTE.bloodHot : PALETTE.orange, 0.35 + lv * 0.65);
+          ctx.fillRect(wx, wy, Math.max(3, winW), Math.max(3, winH));
         }
       }
     }
 
-    // Rooftop watchers: four small silhouettes on the tallest building
-    const tallest = this.buildings.reduce((a, b) => (b.h > a.h ? b : a), this.buildings[0]);
-    if (tallest) {
-      const top = ground - tallest.h;
-      const rr = Math.max(10, Math.min(h * 0.04, tallest.w * 0.16));
-      for (let i = 0; i < 4; i++) {
-        const cx = tallest.x + tallest.w * (0.2 + i * 0.2);
-        drawTurtleHead(ctx, cx, top - rr * 1.4 - audio.pulse * rr * 0.5, rr, {
-          mask: TURTLES[i].mask,
-          eyeOpen: 0.5 + audio.pulse * 0.5,
-          tailWave: audio.level,
-          t,
-        });
-      }
+    // Rooftop watchers: one brother on each of four wide roofs, large enough to read on a wall.
+    const roofs = this.buildings.filter((b) => b.w > w * 0.04);
+    const picks = roofs.length >= 4 ? roofs : this.buildings;
+    for (let i = 0; i < 4; i++) {
+      const b = picks[Math.min(picks.length - 1, Math.floor((i * picks.length) / 4))];
+      if (!b) continue;
+      const top = ground - b.h;
+      const rr = Math.max(22, Math.min(h * 0.055, b.w * 0.28));
+      const cx = b.x + b.w * 0.5;
+      drawTurtleHead(ctx, cx, top - rr * 1.15 - audio.pulse * rr * 0.35, rr, {
+        mask: TURTLES[i].mask,
+        eyeOpen: 0.55 + audio.pulse * 0.45,
+        tailWave: audio.level,
+        t,
+      });
     }
 
     // Street-level fog
@@ -203,9 +204,9 @@ export class SkylineScene implements Scene {
     for (let i = 0; i < 4; i++) {
       const fy = ground - h * 0.04 + i * h * 0.05;
       const g = ctx.createLinearGradient(0, fy - h * 0.08, 0, fy + h * 0.08);
-      g.addColorStop(0, 'rgba(120,80,160,0)');
-      g.addColorStop(0.5, `rgba(120,80,160,${0.12 + audio.level * 0.1})`);
-      g.addColorStop(1, 'rgba(120,80,160,0)');
+      g.addColorStop(0, 'rgba(80,8,14,0)');
+      g.addColorStop(0.5, `rgba(70,8,12,${0.18 + audio.level * 0.14})`);
+      g.addColorStop(1, 'rgba(40,4,8,0)');
       ctx.fillStyle = g;
       ctx.beginPath();
       for (let x = 0; x <= w; x += 20) {
@@ -225,23 +226,15 @@ export class SkylineScene implements Scene {
     ctx.fillRect(0, ground, w, h - ground);
     for (let i = 0; i < 6; i++) {
       const px = w * (0.08 + i * 0.17) + Math.sin(i) * 20;
-      drawPumpkin(ctx, px, ground + h * 0.1, h * 0.045, 0.5 + audio.bass * 0.5 + audio.pulse * 0.5, t + i);
+      drawPumpkin(ctx, px, ground + h * 0.11, h * 0.058, 0.55 + audio.bass * 0.45 + audio.pulse * 0.5, t + i);
     }
 
     // Lightning flash overlay
     if (this.flash > 0.01) {
-      ctx.fillStyle = `rgba(230,220,255,${this.flash * 0.18})`;
+      ctx.fillStyle = `rgba(140,0,16,${this.flash * 0.2})`;
       ctx.fillRect(0, 0, w, h);
     }
 
-    ctx.save();
-    ctx.font = `${Math.round(Math.min(w, h) * 0.065)}px ${DISPLAY_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = PALETTE.orangeHot;
-    ctx.shadowColor = PALETTE.orange;
-    ctx.shadowBlur = 16;
-    ctx.fillText('HAUNTED CITY', w / 2, h * 0.04);
-    ctx.restore();
+    paintTitle(ctx, 'HAUNTED CITY', w, h, PALETTE.bloodHot);
   }
 }

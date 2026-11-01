@@ -1,14 +1,17 @@
 export const PALETTE = {
   black: '#050308',
-  night: '#0d0616',
-  purple: '#8a2be2',
-  purpleDeep: '#3b0a5e',
-  orange: '#ff7a00',
+  night: '#07040c',
+  purple: '#6a1bb8',
+  purpleDeep: '#1a0528',
+  orange: '#ff5a1f',
   orangeHot: '#ffb347',
-  acid: '#a8ff3e',
-  green: '#39b54a',
-  greenDark: '#1f6b2a',
+  acid: '#7dff2a',
+  green: '#2f9a3c',
+  greenDark: '#143d1c',
   white: '#fff7e6',
+  blood: '#c41018',
+  bloodDeep: '#4a0610',
+  bloodHot: '#ff2a2a',
 } as const;
 
 export interface Turtle {
@@ -54,4 +57,27 @@ export function lerp(a: number, b: number, t: number): number {
 
 export function clamp01(v: number): number {
   return v < 0 ? 0 : v > 1 ? 1 : v;
+}
+
+/** High-contrast title: thick dark stroke so cast compression doesn't eat the letters. */
+export function paintTitle(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  w: number,
+  h: number,
+  color: string,
+): void {
+  const size = Math.round(Math.min(w, h) * 0.072);
+  ctx.save();
+  ctx.font = `${size}px ${DISPLAY_FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.lineJoin = 'round';
+  ctx.miterLimit = 2;
+  ctx.lineWidth = Math.max(6, size * 0.09);
+  ctx.strokeStyle = '#14060a';
+  ctx.strokeText(text, w / 2, h * 0.035);
+  ctx.fillStyle = color;
+  ctx.fillText(text, w / 2, h * 0.035);
+  ctx.restore();
 }

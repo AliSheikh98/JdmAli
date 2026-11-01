@@ -33,7 +33,8 @@
         </div>
         <p class="hint">
           Your browser will ask for microphone permission. Choose the input device in the control
-          panel afterwards. Press <kbd>F</kbd> for fullscreen, <kbd>1</kbd>–<kbd>4</kbd> to switch scenes.
+          panel afterwards. Press <kbd>F</kbd> for fullscreen, <kbd>1</kbd>–<kbd>4</kbd> to switch scenes,
+          <kbd>X</kbd> for a fight, <kbd>S</kbd> for the sensei.
         </p>
         <p id="gate-error" class="error" role="alert" hidden></p>
       </div>
@@ -79,6 +80,30 @@
         <input id="gain" class="slider" type="range" min="0.2" max="4" step="0.1" value="1" />
       </div>
 
+      <div class="group">
+        <label class="label" for="fight-every">Fights <span id="fight-every-value" class="muted">60s</span></label>
+        <input id="fight-every" class="slider" type="range" min="45" max="90" step="5" value="60" />
+        <div class="row">
+          <button id="fight-now" class="btn btn-small" type="button">Fight (X)</button>
+          <button id="fight-toggle" class="btn btn-small active" type="button">Auto (G)</button>
+          <button id="sensei" class="btn btn-small" type="button">Sensei (S)</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <label class="label" for="render-scale">Render scale</label>
+        <select id="render-scale" class="select">
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+        </select>
+        <label class="check" for="force-1080">
+          <input id="force-1080" type="checkbox" />
+          Force 1920×1080 backing
+        </label>
+      </div>
+
       <div class="group row">
         <button id="fullscreen" class="btn btn-small" type="button" title="Toggle fullscreen (F)">
           Fullscreen (F)
@@ -93,6 +118,9 @@
         <span><kbd>Space</kbd> next</span>
         <span><kbd>F</kbd> fullscreen</span>
         <span><kbd>H</kbd> hide</span>
+        <span><kbd>X</kbd> fight</span>
+        <span><kbd>G</kbd> auto</span>
+        <span><kbd>S</kbd> sensei</span>
       </footer>
     </aside>
 

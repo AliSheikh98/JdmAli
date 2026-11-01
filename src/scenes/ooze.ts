@@ -1,5 +1,5 @@
 import type { Scene, SceneContext } from './types';
-import { DISPLAY_FONT, PALETTE, rgba, mulberry32 } from './palette';
+import { PALETTE, paintTitle, rgba, mulberry32 } from './palette';
 import { drawShell } from './shapes';
 
 interface Particle {
@@ -25,7 +25,7 @@ interface FogBlob {
   color: string;
 }
 
-const OOZE_COLORS = [PALETTE.acid, PALETTE.green, PALETTE.purple, PALETTE.orange];
+const OOZE_COLORS = [PALETTE.acid, PALETTE.greenDark, PALETTE.blood, PALETTE.purpleDeep];
 
 /**
  * Scene 4 — "Mutagen Vortex": a swirling galaxy of ooze particles whose arms
@@ -43,7 +43,7 @@ export class OozeScene implements Scene {
 
   resize(w: number, h: number): void {
     const rand = mulberry32(2024);
-    this.particles = Array.from({ length: 520 }, (_, i) => ({
+    this.particles = Array.from({ length: 340 }, (_, i) => ({
       angle: rand() * Math.PI * 2,
       radius: Math.pow(rand(), 0.7),
       speed: 0.2 + rand() * 0.6,
@@ -51,7 +51,7 @@ export class OozeScene implements Scene {
       hue: rand(),
       arm: i % 3,
     }));
-    this.fog = Array.from({ length: 10 }, (_, i) => ({
+    this.fog = Array.from({ length: 6 }, (_, i) => ({
       x: rand() * w,
       y: rand() * h,
       r: h * (0.2 + rand() * 0.3),
@@ -75,7 +75,7 @@ export class OozeScene implements Scene {
     this.rotation += dt * (0.25 + audio.level * 1.2 + audio.bass * 0.8);
 
     // Motion-blur trail instead of a hard clear
-    ctx.fillStyle = 'rgba(5,3,8,0.28)';
+    ctx.fillStyle = 'rgba(4,1,6,0.38)';
     ctx.fillRect(0, 0, w, h);
 
     const cx = w / 2;
@@ -129,7 +129,7 @@ export class OozeScene implements Scene {
       rp.alpha -= dt * 1.4;
       if (rp.alpha <= 0) continue;
       ctx.strokeStyle = rgba(PALETTE.acid, rp.alpha * 0.8);
-      ctx.lineWidth = 3 + rp.alpha * 6;
+      ctx.lineWidth = 4 + rp.alpha * 8;
       ctx.beginPath();
       ctx.ellipse(cx, cy, rp.r, rp.r * 0.78, 0, 0, Math.PI * 2);
       ctx.stroke();
@@ -150,12 +150,12 @@ export class OozeScene implements Scene {
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.strokeStyle = rgba(PALETTE.acid, 0.9);
-    ctx.lineWidth = 3 + audio.level * 4;
-    ctx.shadowColor = PALETTE.acid;
-    ctx.shadowBlur = 20 + audio.level * 30;
+    ctx.strokeStyle = rgba(PALETTE.acid, 0.35);
+    ctx.lineWidth = 14 + audio.level * 10;
     ctx.stroke();
-    ctx.shadowBlur = 0;
+    ctx.strokeStyle = PALETTE.acid;
+    ctx.lineWidth = 5 + audio.level * 4;
+    ctx.stroke();
 
     // Central shell emblem pulsing with the kick
     const shellR = maxR * (0.14 + audio.bass * 0.05 + audio.pulse * 0.05);
@@ -166,7 +166,7 @@ export class OozeScene implements Scene {
     ctx.beginPath();
     ctx.arc(cx, cy, shellR * 2.5, 0, Math.PI * 2);
     ctx.fill();
-    drawShell(ctx, cx, cy, shellR, 0.95);
+    drawShell(ctx, cx, cy, shellR, 0.95, audio.time);
 
     // Corner-mounted spectrum arcs for extra motion
     const arcBars = 48;
@@ -176,7 +176,7 @@ export class OozeScene implements Scene {
       const a0 = -Math.PI / 2 + (i / arcBars) * Math.PI * 2;
       const r0 = maxR * 1.02;
       ctx.strokeStyle = rgba(i % 2 ? PALETTE.purple : PALETTE.orange, 0.25 + v * 0.7);
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 6;
       ctx.beginPath();
       ctx.moveTo(cx + Math.cos(a0) * r0 * 1.4, cy + Math.sin(a0) * r0);
       ctx.lineTo(cx + Math.cos(a0) * (r0 * 1.4 + v * maxR * 0.25), cy + Math.sin(a0) * (r0 + v * maxR * 0.25));
@@ -184,18 +184,10 @@ export class OozeScene implements Scene {
     }
 
     if (this.flash > 0.01) {
-      ctx.fillStyle = rgba(PALETTE.purple, this.flash * 0.1);
+      ctx.fillStyle = rgba(PALETTE.blood, this.flash * 0.14);
       ctx.fillRect(0, 0, w, h);
     }
 
-    ctx.save();
-    ctx.font = `${Math.round(Math.min(w, h) * 0.065)}px ${DISPLAY_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = PALETTE.acid;
-    ctx.shadowColor = PALETTE.purple;
-    ctx.shadowBlur = 18;
-    ctx.fillText('MUTAGEN VORTEX', w / 2, h * 0.04);
-    ctx.restore();
+    paintTitle(ctx, 'MUTAGEN VORTEX', w, h, PALETTE.acid);
   }
 }

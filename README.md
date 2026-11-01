@@ -34,13 +34,21 @@ npm run preview   # serves dist/ locally for a final check
 | `Space` / `→` / `←` | Next / previous scene |
 | `F` or Fullscreen button | Toggle fullscreen |
 | `H` | Hide / show the control panel (`Esc` shows it again) |
+| `X` | Start a fight interlude now |
+| `G` | Toggle automatic fights |
+| `S` | Master Splinter enters; turtles and enemies bow |
+| Fights slider | How often automatic fights start, from 45 s to 90 s. A long loud stretch can start one sooner |
+| Render scale | Backing-store size: 0.5×, 1×, 1.5× or 2× the window, times the display's device pixel ratio |
+| Force 1920×1080 | Lock the canvas bitmap at 1920×1080 (useful when a cast client reports a blurry size) |
 | Mouse idle 3 s | Panel and cursor auto-hide; move the mouse to bring them back |
 | Sensitivity slider | Manual gain on top of the automatic normalisation |
 | Audio source | Microphone / line-in (default), audio file, or built-in demo beat |
 | Input device | Any microphone or line-in the OS exposes; the built-in mic is picked by default |
 
 URL parameters for kiosk use: `?scene=3` opens on a scene, `?source=demo`
-auto-starts the demo beat where the browser allows audio without a click.
+auto-starts the demo beat where the browser allows audio without a click,
+`?scale=1.5` sets the render scale, and `?force1080=1` (also `?hd=1`) locks
+the backing store at 1920×1080.
 
 ## How the audio works
 
@@ -100,20 +108,42 @@ Tips for the party:
   a near-black background and large, saturated elements for exactly that
   reason, but dim the lights if you can.
 
+## Projector tips
+
+- On the Mac, open **System Settings ▸ Displays**, select the projector, then
+  **Option-click** **Scaled** (hold the Option key while clicking Scaled) so
+  macOS shows the full resolution list. Pick **1920 × 1080**. A native 1080p
+  frame stays sharp; a "looks like" scaled mode is what the app then has to
+  fight.
+- Wireless casting (AirPlay and the usual receiver apps) compresses the
+  picture and adds latency. Edges go soft and the beat lands late. In the
+  panel set **Render scale** to **1×** or **2×**, and turn on **Force
+  1920×1080 backing** if the cast client reports a small or odd resolution.
+  The canvas backing store is the window size times the display pixel ratio
+  times that render scale, and the drawing context is scaled to match, so the
+  bitmap itself is sharp before the cast compresses it. Strokes and type are
+  drawn thick with dark outlines for the same reason.
+- A **USB-C to HDMI cable** into the MacBook's USB 3 / DisplayPort port (not
+  the USB 2 port) sends an uncompressed picture and skips the cast delay.
+  Prefer the cable when it will reach. Use wireless only when it will not.
+
 ## Project layout
 
 ```
 index.html              Start gate + control panel markup
 src/main.ts             Boot: audio engine, renderer, controls, URL params
-src/renderer.ts         rAF loop, DPR-aware canvas sizing, scene switching
+src/renderer.ts         rAF loop, DPR × render-scale canvas sizing, scene switching
 src/audio/engine.ts     AudioContext, mic/file/demo inputs, FFT, auto-gain
 src/audio/beat.ts       Onset detection + BPM estimate
 src/audio/demo-synth.ts Procedural demo beat
 src/scenes/*.ts         The four scenes + shared procedural shapes/palette
+src/fx/horror.ts        Vignette, coarse grain, VHS tears, fog, drips, jump-scares
+src/fx/brawl.ts         Fight interludes, gore layer, sensei dojo
 src/ui/controls.ts      Buttons, keyboard, device picker, auto-hide, toasts
 ```
 
-All turtle, pumpkin, bat and skyline art is drawn procedurally in code; no
-third-party artwork, logos or fonts are embedded. The display font is
-Creepster (Google Fonts, SIL OFL), loaded from Google Fonts with Impact /
-system fallbacks when offline.
+All turtle, pumpkin, bat, skyline, ninja, skeleton and sensei art is drawn
+procedurally in code; no third-party artwork or logos are embedded. The
+display fonts are Creepster and Bangers (Google Fonts, SIL OFL), loaded from
+Google Fonts with Impact / system fallbacks when offline. Fight words on
+screen are SPLAT, THWACK, POW, WHAM and BONK. The bow is titled SENSEI.

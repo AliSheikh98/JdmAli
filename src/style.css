@@ -276,6 +276,21 @@ body.gate-open .panel {
   accent-color: var(--orange);
 }
 
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--orange);
+}
+
 .muted {
   color: var(--muted);
   font-size: 0.8rem;

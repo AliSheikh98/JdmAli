@@ -24,6 +24,11 @@ export class Controls {
   private readonly fileName = $<HTMLSpanElement>('file-name');
   private readonly gainSlider = $<HTMLInputElement>('gain');
   private readonly gainValue = $<HTMLSpanElement>('gain-value');
+  private readonly fightEvery = $<HTMLInputElement>('fight-every');
+  private readonly fightEveryValue = $<HTMLSpanElement>('fight-every-value');
+  private readonly fightToggle = $<HTMLButtonElement>('fight-toggle');
+  private readonly renderScale = $<HTMLSelectElement>('render-scale');
+  private readonly force1080 = $<HTMLInputElement>('force-1080');
   private readonly fpsLabel = $<HTMLSpanElement>('fps');
   private readonly toast = $<HTMLDivElement>('toast');
   private idleTimer = 0;
@@ -39,6 +44,7 @@ export class Controls {
     this.bindPanel();
     this.bindKeyboard();
     this.bindIdle();
+    this.syncShowControls();
     renderer.onSceneChange = (i) => this.highlightScene(i);
     renderer.onFps = (fps) => {
       const bpm = this.audio.frame.bpm;
@@ -164,6 +170,20 @@ export class Controls {
     });
     $('fullscreen').addEventListener('click', () => void this.toggleFullscreen());
     $('hide-ui').addEventListener('click', () => this.toggleUi());
+    this.fightEvery.addEventListener('input', () => {
+      const seconds = Number(this.fightEvery.value);
+      this.renderer.setFightInterval(seconds);
+      this.fightEveryValue.textContent = `${seconds}s`;
+    });
+    $('fight-now').addEventListener('click', () => this.startFight());
+    this.fightToggle.addEventListener('click', () => this.toggleFights());
+    $('sensei').addEventListener('click', () => this.startSensei());
+    this.renderScale.addEventListener('change', () => {
+      this.renderer.setRenderScale(Number(this.renderScale.value));
+    });
+    this.force1080.addEventListener('change', () => {
+      this.renderer.setForce1080(this.force1080.checked);
+    });
     if (navigator.mediaDevices?.addEventListener) {
       navigator.mediaDevices.addEventListener('devicechange', () => {
         void this.audio.listInputs().then((d) => this.populateDevices(d));
@@ -222,6 +242,18 @@ export class Controls {
         case 'h':
           this.toggleUi();
           break;
+        case 'x':
+          if (e.repeat) break;
+          this.startFight();
+          break;
+        case 'g':
+          if (e.repeat) break;
+          this.toggleFights();
+          break;
+        case 's':
+          if (e.repeat) break;
+          this.startSensei();
+          break;
         case 'escape':
           if (this.uiHidden) this.toggleUi();
           break;
@@ -245,6 +277,38 @@ export class Controls {
       this.showToast('Fullscreen blocked — use the browser menu');
       console.warn(err);
     }
+  }
+
+  private syncShowControls(): void {
+    const scale = String(this.renderer.scale);
+    if ([...this.renderScale.options].some((o) => o.value === scale)) this.renderScale.value = scale;
+    this.force1080.checked = this.renderer.hd;
+    const every = String(this.renderer.fightInterval);
+    this.fightEvery.value = every;
+    this.fightEveryValue.textContent = `${every}s`;
+    this.paintFightToggle();
+  }
+
+  private paintFightToggle(): void {
+    const on = this.renderer.fightsEnabled;
+    this.fightToggle.classList.toggle('active', on);
+    this.fightToggle.textContent = on ? 'Auto (G)' : 'Auto off';
+  }
+
+  private startFight(): void {
+    this.renderer.triggerFight();
+    this.showToast('Fight');
+  }
+
+  private toggleFights(): void {
+    const on = this.renderer.toggleFights();
+    this.paintFightToggle();
+    this.showToast(on ? 'Fights on' : 'Fights off');
+  }
+
+  private startSensei(): void {
+    this.renderer.triggerSplinter();
+    this.showToast('Sensei');
   }
 
   private toggleUi(): void {

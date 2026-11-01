@@ -1,20 +1,40 @@
 import type { AudioEngine } from './audio/engine';
+import { Brawl } from './fx/brawl';
+import { HorrorOverlay } from './fx/horror';
 import type { Scene, SceneContext } from './scenes';
 
+/** Backing-store multipliers offered in the control panel and `?scale=`. */
+export const RENDER_SCALES = [0.5, 1, 1.5, 2] as const;
+
+export function snapRenderScale(value: number): number {
+  let best: number = RENDER_SCALES[0];
+  for (const scale of RENDER_SCALES) {
+    if (Math.abs(scale - value) < Math.abs(best - value)) best = scale;
+  }
+  return best;
+}
+
 /**
- * Drives the requestAnimationFrame loop, keeps the canvas sized to the
- * window (DPR-aware, capped for projector performance) and hands each frame
- * to the active scene.
+ * Drives the requestAnimationFrame loop. The canvas backing store is the
+ * window size times devicePixelRatio times the render scale, and the context
+ * is scaled so scenes keep drawing in CSS pixels. A 1920×1080 backing can be
+ * forced for wireless casts that report a soft or odd resolution.
  */
 export class Renderer {
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly scenes: Scene[];
   private readonly audio: AudioEngine;
+  readonly horror = new HorrorOverlay();
+  readonly brawl = new Brawl();
   private index = 0;
   private w = 0;
   private h = 0;
-  private dpr = 1;
+  private sx = 1;
+  private sy = 1;
+  private appliedDpr = 1;
+  private renderScale = 1;
+  private force1080 = false;
   private raf = 0;
   private frames = 0;
   private fpsTime = 0;
@@ -29,7 +49,9 @@ export class Renderer {
     this.ctx = ctx;
     this.scenes = scenes;
     this.audio = audio;
-    window.addEventListener('resize', () => this.resize());
+    const resize = () => this.resize();
+    window.addEventListener('resize', resize);
+    document.addEventListener('fullscreenchange', resize);
     this.resize();
   }
 
@@ -45,8 +67,50 @@ export class Renderer {
     return this.scenes.length;
   }
 
+  get scale(): number {
+    return this.renderScale;
+  }
+
+  get hd(): boolean {
+    return this.force1080;
+  }
+
+  get fightInterval(): number {
+    return this.brawl.fightEvery;
+  }
+
+  get fightsEnabled(): boolean {
+    return this.brawl.fightsEnabled;
+  }
+
   sceneName(i: number): string {
     return this.scenes[i]?.name ?? `Scene ${i + 1}`;
+  }
+
+  setRenderScale(value: number): void {
+    this.renderScale = snapRenderScale(value);
+    this.resize();
+  }
+
+  setForce1080(on: boolean): void {
+    this.force1080 = on;
+    this.resize();
+  }
+
+  setFightInterval(seconds: number): void {
+    this.brawl.setFightEvery(seconds);
+  }
+
+  triggerFight(): void {
+    this.brawl.triggerFight();
+  }
+
+  toggleFights(): boolean {
+    return this.brawl.toggleFights();
+  }
+
+  triggerSplinter(): void {
+    this.brawl.triggerSplinter();
   }
 
   setScene(i: number): void {
@@ -63,20 +127,34 @@ export class Renderer {
   }
 
   resize(): void {
-    // 1080p projectors are DPR 1; cap higher-density laptop screens so the
-    // fill-rate cost stays sane when previewing on the Retina panel.
-    this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    this.w = window.innerWidth;
-    this.h = window.innerHeight;
-    this.canvas.width = Math.floor(this.w * this.dpr);
-    this.canvas.height = Math.floor(this.h * this.dpr);
-    this.canvas.style.width = `${this.w}px`;
-    this.canvas.style.height = `${this.h}px`;
-    for (const s of this.scenes) s.resize?.(this.w, this.h);
+    const cssW = Math.max(1, window.innerWidth);
+    const cssH = Math.max(1, window.innerHeight);
+    const dpr = window.devicePixelRatio || 1;
+    this.appliedDpr = dpr;
+    if (this.force1080) {
+      this.canvas.width = 1920;
+      this.canvas.height = 1080;
+      this.sx = 1920 / cssW;
+      this.sy = 1080 / cssH;
+    } else {
+      const scale = dpr * this.renderScale;
+      this.sx = scale;
+      this.sy = scale;
+      this.canvas.width = Math.max(1, Math.floor(cssW * scale));
+      this.canvas.height = Math.max(1, Math.floor(cssH * scale));
+    }
+    this.canvas.style.width = `${cssW}px`;
+    this.canvas.style.height = `${cssH}px`;
+    this.w = cssW;
+    this.h = cssH;
+    for (const s of this.scenes) s.resize?.(cssW, cssH);
+    this.horror.resize(cssW, cssH);
+    this.brawl.resize(cssW, cssH);
   }
 
   start(): void {
     if (this.raf) return;
+    this.resize();
     this.scene.resize?.(this.w, this.h);
     this.scene.enter?.();
     this.onSceneChange?.(this.index, this.scene);
@@ -88,11 +166,20 @@ export class Renderer {
   }
 
   private frame(now: number): void {
+    const dpr = window.devicePixelRatio || 1;
+    if (!this.force1080 && Math.abs(dpr - this.appliedDpr) > 0.01) this.resize();
+
     const audio = this.audio.update();
+    this.horror.update(audio, this.w, this.h);
+    this.brawl.update(audio, this.w, this.h);
+
     const ctx = this.ctx;
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.setTransform(this.sx, 0, 0, this.sy, 0, 0);
     const sc: SceneContext = { ctx, w: this.w, h: this.h, audio, t: audio.time, dt: audio.dt };
-    this.scene.draw(sc);
+    if (!this.brawl.opaque) this.scene.draw(sc);
+    if (this.brawl.mode === 'off') this.horror.drawAtmosphere(ctx, this.w, this.h, audio.time);
+    this.brawl.draw(ctx, this.w, this.h, audio, audio.time);
+    this.horror.drawGrade(ctx, this.w, this.h, audio.time);
 
     this.frames++;
     if (now - this.fpsTime >= 1000) {

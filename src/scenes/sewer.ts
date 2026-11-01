@@ -1,5 +1,5 @@
 import type { Scene, SceneContext } from './types';
-import { DISPLAY_FONT, PALETTE, rgba, mulberry32 } from './palette';
+import { PALETTE, paintTitle, rgba, mulberry32 } from './palette';
 import { drawBat, drawPumpkin } from './shapes';
 
 interface FlyingBat {
@@ -83,17 +83,17 @@ export class SewerScene implements Scene {
       const y = vy - rh / 2;
       const depthFade = 0.2 + z * 0.8;
       const f = this.ringFlash[i];
-      const base = i % 2 === 0 ? PALETTE.green : PALETTE.purple;
-      ctx.strokeStyle = rgba(f > 0.3 ? PALETTE.acid : base, depthFade * (0.35 + f * 0.65));
-      ctx.lineWidth = 2 + z * 10 + f * 6 + audio.bass * 6 * z;
+      const base = i % 2 === 0 ? PALETTE.blood : PALETTE.greenDark;
+      ctx.strokeStyle = rgba(f > 0.3 ? PALETTE.bloodHot : base, depthFade * (0.4 + f * 0.6));
+      ctx.lineWidth = Math.max(4, 4 + z * 14 + f * 8 + audio.bass * 8 * z);
       ctx.beginPath();
       const rad = Math.min(rw, rh) * 0.35;
       ctx.roundRect(x, y, rw, rh, rad);
       ctx.stroke();
       // Brick ticks along the ring
       if (i % 3 === 0) {
-        ctx.strokeStyle = rgba(PALETTE.orange, depthFade * 0.25);
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = rgba(PALETTE.blood, depthFade * 0.45);
+        ctx.lineWidth = 3;
         for (let k = 0; k < 8; k++) {
           const px = x + (rw / 8) * (k + 0.5);
           ctx.beginPath();
@@ -107,8 +107,8 @@ export class SewerScene implements Scene {
     // Vanishing-point glow pulsing with the bass
     const glowR = h * (0.06 + audio.bass * 0.18 + audio.pulse * 0.08);
     const g = ctx.createRadialGradient(vx, vy, 0, vx, vy, glowR * 3);
-    g.addColorStop(0, rgba(PALETTE.acid, 0.9));
-    g.addColorStop(0.3, rgba(PALETTE.green, 0.5));
+    g.addColorStop(0, rgba(PALETTE.bloodHot, 0.75));
+    g.addColorStop(0.35, rgba(PALETTE.green, 0.4));
     g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g;
     ctx.beginPath();
@@ -131,18 +131,18 @@ export class SewerScene implements Scene {
     ctx.lineTo(w, h);
     ctx.closePath();
     const water = ctx.createLinearGradient(0, waterTop - amp, 0, h);
-    water.addColorStop(0, rgba(PALETTE.acid, 0.85));
-    water.addColorStop(0.25, rgba(PALETTE.green, 0.75));
-    water.addColorStop(1, rgba(PALETTE.greenDark, 0.9));
+    water.addColorStop(0, rgba(PALETTE.acid, 0.65));
+    water.addColorStop(0.22, rgba(PALETTE.greenDark, 0.88));
+    water.addColorStop(1, rgba(PALETTE.bloodDeep, 0.94));
     ctx.fillStyle = water;
     ctx.fill();
     // Two strokes (wide translucent + thin bright) stand in for a glow;
     // shadowBlur across the full width is too costly at 1080p.
-    ctx.strokeStyle = rgba(PALETTE.acid, 0.35);
-    ctx.lineWidth = 10 + audio.level * 14;
+    ctx.strokeStyle = rgba(PALETTE.acid, 0.4);
+    ctx.lineWidth = 12 + audio.level * 16;
     ctx.stroke();
     ctx.strokeStyle = PALETTE.acid;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.stroke();
 
     // Floating pumpkins drift toward the camera
@@ -156,7 +156,7 @@ export class SewerScene implements Scene {
       const scale = 0.08 + (1 - z) * 0.9;
       const x = vx + (p.x - 0.5) * w * scale * 1.1;
       const y = waterTop + (h - waterTop) * (1 - z) * 0.9 + Math.sin(t * 2 + p.bob) * 4 * scale - 10;
-      const r = h * 0.07 * p.size * scale;
+      const r = h * 0.085 * p.size * scale;
       if (r > 2) drawPumpkin(ctx, x, y, r, 0.4 + audio.mid * 0.6 + audio.pulse * 0.4, t);
     }
 
@@ -172,24 +172,16 @@ export class SewerScene implements Scene {
       const spread = (1 - z) * h * 0.65 * b.radius + 10;
       const x = vx + Math.cos(b.angle + t * 0.3) * spread * (w / h);
       const y = vy + Math.sin(b.angle + t * 0.3) * spread - (1 - z) * h * 0.1;
-      const size = 6 + (1 - z) * (1 - z) * h * 0.09;
+      const size = 10 + (1 - z) * (1 - z) * h * 0.11;
       drawBat(ctx, x, y, size, b.flap, z > 0.6 ? '#3b2748' : '#0a0410');
     }
 
     // Beat flash
     if (this.flash > 0.01) {
-      ctx.fillStyle = rgba(PALETTE.acid, this.flash * 0.1);
+      ctx.fillStyle = rgba(PALETTE.blood, this.flash * 0.14);
       ctx.fillRect(0, 0, w, h);
     }
 
-    ctx.save();
-    ctx.font = `${Math.round(Math.min(w, h) * 0.065)}px ${DISPLAY_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = PALETTE.acid;
-    ctx.shadowColor = PALETTE.green;
-    ctx.shadowBlur = 16;
-    ctx.fillText('DOWN IN THE SEWER', w / 2, h * 0.04);
-    ctx.restore();
+    paintTitle(ctx, 'DOWN IN THE SEWER', w, h, PALETTE.acid);
   }
 }

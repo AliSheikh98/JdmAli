@@ -38,37 +38,46 @@ export function drawTurtleHead(
     const g = ctx.createRadialGradient(0, 0, r * 0.6, 0, 0, r * 2.2);
     g.addColorStop(0, opts.glow);
     g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.globalAlpha = opts.glowAmount ?? 0.5;
+    const prev = ctx.globalAlpha;
+    ctx.globalAlpha = prev * (opts.glowAmount ?? 0.5);
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(0, 0, r * 2.2, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = prev;
   }
 
-  // Mask tails (behind the head), two ribbons trailing to the right
-  ctx.strokeStyle = opts.mask;
+  // Mask tails (behind the head), two ribbons trailing to the right.
+  // A dark under-stroke keeps the colour readable after cast compression.
   ctx.lineCap = 'round';
-  ctx.lineWidth = r * 0.22;
+  ctx.lineJoin = 'round';
   for (let i = 0; i < 2; i++) {
     const dir = i === 0 ? -1 : 1;
     const phase = t * 4 + i * 1.7;
     ctx.beginPath();
     ctx.moveTo(r * 0.75, -r * 0.05 + dir * r * 0.1);
-    const len = r * (1.5 + tailWave * 0.6);
-    const cx1 = r * 1.3;
-    const cy1 = dir * r * 0.25 + Math.sin(phase) * r * 0.25 * (0.3 + tailWave);
-    const cx2 = r * 1.9;
-    const cy2 = dir * r * 0.75 + Math.cos(phase * 1.3) * r * 0.35 * (0.3 + tailWave);
-    ctx.bezierCurveTo(cx1, cy1, cx2, cy2, r * 0.75 + len, dir * r * 0.9 + Math.sin(phase * 0.8) * r * 0.3);
+    const len = r * (1.05 + tailWave * 0.35);
+    const cx1 = r * 1.05;
+    const cy1 = dir * r * 0.2 + Math.sin(phase) * r * 0.2 * (0.3 + tailWave);
+    const cx2 = r * 1.35;
+    const cy2 = dir * r * 0.55 + Math.cos(phase * 1.3) * r * 0.28 * (0.3 + tailWave);
+    ctx.bezierCurveTo(cx1, cy1, cx2, cy2, r * 0.55 + len, dir * r * 0.7 + Math.sin(phase * 0.8) * r * 0.22);
+    ctx.strokeStyle = '#14080c';
+    ctx.lineWidth = Math.max(5, r * 0.36);
+    ctx.stroke();
+    ctx.strokeStyle = opts.mask;
+    ctx.lineWidth = Math.max(3, r * 0.24);
     ctx.stroke();
   }
 
-  // Head: slightly squashed circle with a jaw bump
+  // Head: slightly squashed circle with a jaw bump and a hard outline
   ctx.fillStyle = PALETTE.green;
   ctx.beginPath();
   ctx.ellipse(0, 0, r, r * 0.92, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.lineWidth = Math.max(3, r * 0.075);
+  ctx.strokeStyle = '#06140a';
+  ctx.stroke();
   ctx.fillStyle = '#2f9a3f';
   ctx.beginPath();
   ctx.ellipse(0, r * 0.42, r * 0.78, r * 0.5, 0, 0, Math.PI);
@@ -94,31 +103,67 @@ export function drawTurtleHead(
   ctx.ellipse(r * 0.88, -r * 0.08, r * 0.2, r * 0.26, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Eyes: white almonds in the mask, narrowing when eyeOpen is low
-  const eyeH = r * (0.06 + 0.2 * eyeOpen);
-  ctx.fillStyle = PALETTE.white;
+  // Eyes: white almonds, then a blood-red glow with a hot core so they
+  // read across a dim projector. They narrow when eyeOpen is low.
+  const eyeH = r * (0.08 + 0.22 * eyeOpen);
   for (const side of [-1, 1]) {
+    ctx.fillStyle = PALETTE.white;
     ctx.beginPath();
     ctx.moveTo(side * r * 0.16, -r * 0.1);
     ctx.quadraticCurveTo(side * r * 0.42, -r * 0.1 - eyeH, side * r * 0.66, -r * 0.08);
     ctx.quadraticCurveTo(side * r * 0.42, -r * 0.08 + eyeH * 0.8, side * r * 0.16, -r * 0.1);
     ctx.closePath();
     ctx.fill();
+    const gx = side * r * 0.42;
+    const gy = -r * 0.1;
+    // Solid discs, not gradients: a bright core still reads as a glow and stays cheap at 1080p.
+    ctx.fillStyle = 'rgba(255,24,24,0.95)';
+    ctx.beginPath();
+    ctx.arc(gx, gy, Math.max(3, r * 0.11), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff4ea';
+    ctx.beginPath();
+    ctx.arc(gx, gy, Math.max(2, eyeH * 0.28), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1a0508';
+    ctx.beginPath();
+    ctx.arc(gx, gy, Math.max(1.5, eyeH * 0.14), 0, Math.PI * 2);
+    ctx.fill();
   }
 
   // Mouth: a determined line with a hint of a smirk
   ctx.strokeStyle = '#143d1b';
-  ctx.lineWidth = r * 0.07;
+  ctx.lineWidth = Math.max(2, r * 0.08);
+  ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(-r * 0.4, r * 0.55);
   ctx.quadraticCurveTo(0, r * 0.68 + eyeOpen * r * 0.05, r * 0.42, r * 0.52);
   ctx.stroke();
 
+  // Ooze drip off the chin. Length creeps so the texture reads as wet.
+  const drip = r * (0.28 + 0.16 * (0.5 + 0.5 * Math.sin(t * 2.2)));
+  ctx.strokeStyle = '#143d1b';
+  ctx.lineWidth = Math.max(3, r * 0.1);
+  ctx.beginPath();
+  ctx.moveTo(0, r * 0.78);
+  ctx.lineTo(0, r * 0.78 + drip);
+  ctx.stroke();
+  ctx.strokeStyle = PALETTE.green;
+  ctx.lineWidth = Math.max(2, r * 0.055);
+  ctx.beginPath();
+  ctx.moveTo(0, r * 0.78);
+  ctx.lineTo(0, r * 0.78 + drip);
+  ctx.stroke();
+  ctx.fillStyle = PALETTE.acid;
+  ctx.beginPath();
+  ctx.arc(0, r * 0.78 + drip, Math.max(2, r * 0.045), 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.restore();
 }
 
 /** Hexagonal shell plate pattern, used as a decorative emblem. */
-export function drawShell(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, alpha = 1): void {
+export function drawShell(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, alpha = 1, t = 0): void {
   ctx.save();
   ctx.translate(x, y);
   ctx.globalAlpha = alpha;
@@ -127,7 +172,7 @@ export function drawShell(ctx: CanvasRenderingContext2D, x: number, y: number, r
   ctx.ellipse(0, 0, r, r * 1.15, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = '#2b1a0b';
-  ctx.lineWidth = r * 0.08;
+  ctx.lineWidth = Math.max(3, r * 0.09);
   const hex = (cx: number, cy: number, s: number) => {
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
@@ -146,6 +191,18 @@ export function drawShell(ctx: CanvasRenderingContext2D, x: number, y: number, r
   for (let i = 0; i < 6; i++) {
     const a = (Math.PI / 3) * i;
     hex(Math.cos(a) * r * 0.62, Math.sin(a) * r * 0.7, r * 0.3);
+  }
+  // A couple of static-looking drips off the bottom plate.
+  ctx.strokeStyle = '#3d6a28';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = Math.max(3, r * 0.08);
+  for (let i = 0; i < 2; i++) {
+    const drip = r * (0.28 + 0.12 * Math.sin(t * 2 + i));
+    const dx = (i === 0 ? -0.2 : 0.22) * r;
+    ctx.beginPath();
+    ctx.moveTo(dx, r * 0.85);
+    ctx.lineTo(dx, r * 0.85 + drip);
+    ctx.stroke();
   }
   ctx.restore();
 }
@@ -188,8 +245,13 @@ export function drawPumpkin(
     ctx.ellipse(lx * r, 0, r * 0.55, r * 0.85, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.strokeStyle = 'rgba(120,40,0,0.55)';
-  ctx.lineWidth = r * 0.05;
+  ctx.strokeStyle = '#4a1200';
+  ctx.lineWidth = Math.max(3, r * 0.07);
+  ctx.beginPath();
+  ctx.ellipse(0, r * 0.02, r * 0.92, r * 0.82, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(90,24,0,0.7)';
+  ctx.lineWidth = Math.max(2, r * 0.05);
   for (const lx of [-0.5, -0.25, 0.25, 0.5]) {
     ctx.beginPath();
     ctx.ellipse(lx * r, 0, r * 0.55, r * 0.85, 0, -Math.PI / 2, Math.PI / 2, lx < 0);
@@ -267,6 +329,12 @@ export function drawBat(
     ctx.closePath();
     ctx.fill();
   }
+  // Pinprick glowing eyes so bats read as more than a black blob.
+  ctx.fillStyle = '#ff2a2a';
+  ctx.beginPath();
+  ctx.arc(-size * 0.06, -size * 0.02, Math.max(1.5, size * 0.045), 0, Math.PI * 2);
+  ctx.arc(size * 0.06, -size * 0.02, Math.max(1.5, size * 0.045), 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
@@ -301,7 +369,7 @@ export function drawLightning(
     [width * 0.08, '#ffffff'],
   ];
   for (const [lw, stroke] of passes) {
-    ctx.lineWidth = Math.max(1, lw / (depth + 1));
+    ctx.lineWidth = Math.max(2, lw / (depth + 1));
     ctx.strokeStyle = stroke;
     ctx.beginPath();
     ctx.moveTo(pts[0][0], pts[0][1]);
@@ -311,20 +379,30 @@ export function drawLightning(
   ctx.restore();
 }
 
-export function drawMoon(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, glow: number): void {
+export function drawMoon(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  glow: number,
+  tint = '#e7b89a',
+): void {
   ctx.save();
   const g = ctx.createRadialGradient(x, y, r * 0.8, x, y, r * 3);
-  g.addColorStop(0, rgba(PALETTE.orangeHot, 0.35 + glow * 0.3));
+  g.addColorStop(0, rgba(PALETTE.blood, 0.28 + glow * 0.35));
   g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g;
   ctx.beginPath();
   ctx.arc(x, y, r * 3, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#ffd58a';
+  ctx.fillStyle = tint;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = 'rgba(200,140,60,0.35)';
+  ctx.lineWidth = Math.max(3, r * 0.06);
+  ctx.strokeStyle = '#4a1014';
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(90,20,24,0.45)';
   for (const [cx, cy, cr] of [
     [-0.3, -0.2, 0.18],
     [0.25, 0.1, 0.12],

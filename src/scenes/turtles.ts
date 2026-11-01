@@ -1,5 +1,5 @@
 import type { Scene, SceneContext } from './types';
-import { DISPLAY_FONT, PALETTE, TURTLES, rgba, clamp01, mulberry32 } from './palette';
+import { DISPLAY_FONT, PALETTE, TURTLES, paintTitle, rgba, clamp01, mulberry32 } from './palette';
 import { drawTurtleHead } from './shapes';
 
 interface Spark {
@@ -39,13 +39,13 @@ export class TurtlesScene implements Scene {
 
     // Background
     const bg = ctx.createRadialGradient(w / 2, h * 0.55, h * 0.1, w / 2, h * 0.55, h * 0.95);
-    bg.addColorStop(0, `rgba(59,10,94,${0.45 + this.flash * 0.4})`);
+    bg.addColorStop(0, `rgba(90,6,16,${0.5 + this.flash * 0.4})`);
+    bg.addColorStop(0.5, '#12060c');
     bg.addColorStop(1, PALETTE.black);
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, w, h);
 
-    // Rising ooze sparks
-    ctx.fillStyle = rgba(PALETTE.acid, 0.6);
+    // Rising ooze and blood sparks
     for (const s of this.sparks) {
       s.y -= s.vy * dt * (1 + audio.level * 2);
       if (s.y < -10) {
@@ -54,8 +54,9 @@ export class TurtlesScene implements Scene {
       }
       const a = 0.25 + 0.5 * Math.abs(Math.sin(t * 2 + s.phase));
       ctx.globalAlpha = a;
+      ctx.fillStyle = s.phase > Math.PI ? rgba(PALETTE.blood, 0.85) : rgba(PALETTE.acid, 0.7);
       ctx.beginPath();
-      ctx.arc(s.x, s.y, s.size * (1 + audio.treble), 0, Math.PI * 2);
+      ctx.arc(s.x, s.y, Math.max(2, s.size * (1 + audio.treble)), 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -91,7 +92,7 @@ export class TurtlesScene implements Scene {
       ctx.save();
       ctx.translate(cx, cy);
       ctx.lineCap = 'round';
-      ctx.lineWidth = Math.max(3, (Math.PI * 2 * innerR) / barsPerTurtle * 0.5);
+      ctx.lineWidth = Math.max(4, (Math.PI * 2 * innerR) / barsPerTurtle * 0.55);
       for (let b = 0; b < barsPerTurtle; b++) {
         const a = (b / barsPerTurtle) * Math.PI * 2 - Math.PI / 2;
         const len = headR * 0.12 + values[b] * headR * 1.0;
@@ -105,7 +106,7 @@ export class TurtlesScene implements Scene {
       for (let k = 0; k < 3; k++) {
         const rr = innerR * (1.1 + k * 0.2) + band * headR * (0.4 + k * 0.15) + audio.pulse * headR * 0.18;
         ctx.strokeStyle = rgba(k === 1 ? PALETTE.acid : turtle.mask, (0.35 - k * 0.09) * (0.4 + band));
-        ctx.lineWidth = 2 + band * 5;
+        ctx.lineWidth = 4 + band * 6;
         ctx.beginPath();
         ctx.arc(0, 0, rr, 0, Math.PI * 2);
         ctx.stroke();
@@ -124,12 +125,14 @@ export class TurtlesScene implements Scene {
 
       // Name plate
       ctx.save();
-      ctx.font = `${Math.round(headR * 0.55)}px ${DISPLAY_FONT}`;
+      const nameSize = Math.round(headR * 0.62);
+      ctx.font = `${nameSize}px ${DISPLAY_FONT}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
+      ctx.lineWidth = Math.max(4, nameSize * 0.1);
+      ctx.strokeStyle = '#14060a';
+      ctx.strokeText(turtle.short, cx, cy + headR * 2.2);
       ctx.fillStyle = turtle.mask;
-      ctx.shadowColor = turtle.mask;
-      ctx.shadowBlur = 12 + band * 20;
       ctx.fillText(turtle.short, cx, cy + headR * 2.2);
       ctx.restore();
     }
@@ -148,24 +151,15 @@ export class TurtlesScene implements Scene {
       grad.addColorStop(0, color);
       grad.addColorStop(1, rgba(PALETTE.orange, 0.2));
       ctx.fillStyle = grad;
-      ctx.fillRect(b * bw + 1, h - bh, bw - 2, bh);
+      ctx.fillRect(b * bw + 1, h - bh, Math.max(3, bw - 2), bh);
     }
 
     // Beat flash vignette
     if (this.flash > 0.01) {
-      ctx.fillStyle = rgba(PALETTE.orange, this.flash * 0.12);
+      ctx.fillStyle = rgba(PALETTE.blood, this.flash * 0.16);
       ctx.fillRect(0, 0, w, h);
     }
 
-    // Title
-    ctx.save();
-    ctx.font = `${Math.round(Math.min(w, h) * 0.07)}px ${DISPLAY_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = PALETTE.orange;
-    ctx.shadowColor = PALETTE.purple;
-    ctx.shadowBlur = 18;
-    ctx.fillText('HEROES IN A HALF SHELL', w / 2, h * 0.04);
-    ctx.restore();
+    paintTitle(ctx, 'HEROES IN A HALF SHELL', w, h, PALETTE.bloodHot);
   }
 }
