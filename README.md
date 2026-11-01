@@ -30,15 +30,11 @@ npm run preview   # serves dist/ locally for a final check
 
 | Input | Action |
 | --- | --- |
-| `1` `2` `3` `4` `5` or scene buttons | Switch scene: Turtles · Sewer · City · Ooze · Redrum |
-| (automatic) | Scenes advance every 40 s. Fights and the bow start on their own |
+| `1` `2` `3` `4` or scene buttons | Switch scene: Turtles · Sewer · City · Ooze |
+| (automatic) | Scenes advance every 40 s |
 | `Space` / `→` / `←` | Next / previous scene |
 | `F` or Fullscreen button | Toggle fullscreen |
 | `H` | Hide / show the control panel (`Esc` shows it again) |
-| `X` | Start a fight now (fights also start by themselves) |
-| `G` | Toggle automatic fights |
-| `S` | Master Splinter enters; turtles and enemies bow |
-| Fights slider | How often automatic fights start, from 45 s to 90 s. A long loud stretch can start one sooner |
 | Render scale | Backing-store size: 0.5×, 1×, 1.5× or 2× the window, times the display's device pixel ratio |
 | Force 1920×1080 | Lock the canvas bitmap at 1920×1080 (useful when a cast client reports a blurry size) |
 | Mouse idle 3 s | Panel and cursor auto-hide; move the mouse to bring them back |
@@ -114,8 +110,7 @@ Tips for the party:
 - On the Mac, open **System Settings ▸ Displays**, select the projector, then
   **Option-click** **Scaled** (hold the Option key while clicking Scaled) so
   macOS shows the full resolution list. Pick **1920 × 1080**. A native 1080p
-  frame stays sharp; a "looks like" scaled mode is what the app then has to
-  fight.
+  frame stays sharp.
 - Wireless casting (AirPlay and the usual receiver apps) compresses the
   picture and adds latency. Edges go soft and the beat lands late. In the
   panel set **Render scale** to **1×** or **2×**, and turn on **Force
@@ -139,12 +134,12 @@ src/audio/beat.ts       Onset detection + BPM estimate
 src/audio/demo-synth.ts Procedural demo beat
 src/scenes/*.ts         The four scenes + shared procedural shapes/palette
 src/fx/horror.ts        Vignette, coarse grain, VHS tears, fog, drips, jump-scares
-src/fx/brawl.ts         Fight interludes, gore layer, sensei dojo
+src/fx/waves.ts         Big scratchy sine waves drawn over every scene
 src/ui/controls.ts      Buttons, keyboard, device picker, auto-hide, toasts
 ```
 
-All turtle, pumpkin, bat, skyline, ninja, skeleton and sensei art is drawn
-procedurally in code; no third-party artwork or logos are embedded. The
-display fonts are Creepster and Bangers (Google Fonts, SIL OFL), loaded from
-Google Fonts with Impact / system fallbacks when offline. Fight words on
-screen are SPLAT, THWACK, POW, WHAM and BONK. The bow is titled SENSEI.
+All turtle, pumpkin, bat and skyline art is drawn procedurally in code; no
+third-party artwork or logos are embedded. The display font is Creepster
+(Google Fonts, SIL OFL), loaded from Google Fonts with Impact / system
+fallbacks when offline. Three large scratchy sine waves sit on top of every
+scene and punch with the beat.

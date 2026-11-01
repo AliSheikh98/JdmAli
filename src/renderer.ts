@@ -1,6 +1,6 @@
 import type { AudioEngine } from './audio/engine';
-import { Brawl } from './fx/brawl';
 import { HorrorOverlay } from './fx/horror';
+import { drawScratchWaves } from './fx/waves';
 import type { Scene, SceneContext } from './scenes';
 
 /** Backing-store multipliers offered in the control panel and `?scale=`. */
@@ -26,7 +26,6 @@ export class Renderer {
   private readonly scenes: Scene[];
   private readonly audio: AudioEngine;
   readonly horror = new HorrorOverlay();
-  readonly brawl = new Brawl();
   private index = 0;
   private w = 0;
   private h = 0;
@@ -78,14 +77,6 @@ export class Renderer {
     return this.force1080;
   }
 
-  get fightInterval(): number {
-    return this.brawl.fightEvery;
-  }
-
-  get fightsEnabled(): boolean {
-    return this.brawl.fightsEnabled;
-  }
-
   sceneName(i: number): string {
     return this.scenes[i]?.name ?? `Scene ${i + 1}`;
   }
@@ -98,22 +89,6 @@ export class Renderer {
   setForce1080(on: boolean): void {
     this.force1080 = on;
     this.resize();
-  }
-
-  setFightInterval(seconds: number): void {
-    this.brawl.setFightEvery(seconds);
-  }
-
-  triggerFight(): void {
-    this.brawl.triggerFight();
-  }
-
-  toggleFights(): boolean {
-    return this.brawl.toggleFights();
-  }
-
-  triggerSplinter(): void {
-    this.brawl.triggerSplinter();
   }
 
   setScene(i: number): void {
@@ -153,7 +128,6 @@ export class Renderer {
     this.h = cssH;
     for (const s of this.scenes) s.resize?.(cssW, cssH);
     this.horror.resize(cssW, cssH);
-    this.brawl.resize(cssW, cssH);
   }
 
   start(): void {
@@ -175,22 +149,19 @@ export class Renderer {
 
     const audio = this.audio.update();
     this.horror.update(audio, this.w, this.h);
-    this.brawl.update(audio, this.w, this.h);
 
     const ctx = this.ctx;
     ctx.setTransform(this.sx, 0, 0, this.sy, 0, 0);
     const sc: SceneContext = { ctx, w: this.w, h: this.h, audio, t: audio.time, dt: audio.dt };
-    if (!this.brawl.opaque) this.scene.draw(sc);
-    if (this.brawl.mode === 'off') this.horror.drawAtmosphere(ctx, this.w, this.h, audio.time);
-    this.brawl.draw(ctx, this.w, this.h, audio, audio.time);
+    this.scene.draw(sc);
+    this.horror.drawAtmosphere(ctx, this.w, this.h, audio.time);
+    drawScratchWaves(ctx, this.w, this.h, audio, audio.time);
     this.horror.drawGrade(ctx, this.w, this.h, audio.time);
 
-    if (this.brawl.mode === 'off') {
-      this.dwell += audio.dt;
-      if (this.dwell >= this.dwellEvery) {
-        this.dwell = 0;
-        this.nextScene();
-      }
+    this.dwell += audio.dt;
+    if (this.dwell >= this.dwellEvery) {
+      this.dwell = 0;
+      this.nextScene();
     }
 
     this.frames++;

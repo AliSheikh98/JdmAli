@@ -33,8 +33,7 @@
         </div>
         <p class="hint">
           Your browser will ask for microphone permission. Choose the input device in the control
-          panel afterwards. The show then runs on its own: scenes, fights, and the bow.
-          Press <kbd>F</kbd> for fullscreen. <kbd>1</kbd>–<kbd>5</kbd> still switch scenes if you want.
+          panel afterwards. Scenes advance on their own. Press <kbd>F</kbd> for fullscreen.
         </p>
         <p id="gate-error" class="error" role="alert" hidden></p>
       </div>
@@ -81,16 +80,6 @@
       </div>
 
       <div class="group">
-        <label class="label" for="fight-every">Fights <span id="fight-every-value" class="muted">60s</span></label>
-        <input id="fight-every" class="slider" type="range" min="45" max="90" step="5" value="60" />
-        <div class="row">
-          <button id="fight-now" class="btn btn-small" type="button">Fight (X)</button>
-          <button id="fight-toggle" class="btn btn-small active" type="button">Auto (G)</button>
-          <button id="sensei" class="btn btn-small" type="button">Sensei (S)</button>
-        </div>
-      </div>
-
-      <div class="group">
         <label class="label" for="render-scale">Render scale</label>
         <select id="render-scale" class="select">
           <option value="0.5">0.5×</option>
@@ -114,13 +103,10 @@
       </div>
 
       <footer class="panel-foot">
-        <span><kbd>1</kbd>–<kbd>5</kbd> scenes</span>
+        <span><kbd>1</kbd>–<kbd>4</kbd> scenes</span>
         <span><kbd>Space</kbd> next</span>
         <span><kbd>F</kbd> fullscreen</span>
         <span><kbd>H</kbd> hide</span>
-        <span><kbd>X</kbd> fight</span>
-        <span><kbd>G</kbd> auto</span>
-        <span><kbd>S</kbd> sensei</span>
       </footer>
     </aside>
 
