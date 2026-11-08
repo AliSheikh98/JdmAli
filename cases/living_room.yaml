@@ -1,0 +1,6 @@
+model: models/acoustics-of-a-living-room/living_room_acoustics_llrevit.mph
+f0: "100[Hz]"
+nacc: "1[m/s^2]"
+zncouch: "1000-900*i[Pa*s/m]"
+eigenfrequency_around: "10[Hz]"
+# listener_m: [x, y, z]  # meters, inside the room; set after roomlab check prints the bounds

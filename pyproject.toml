@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "roomlab"
+version = "0.1.0"
+description = "Run the COMSOL 6.2 Acoustics of a Living Room model from a case file."
+requires-python = ">=3.10"
+dependencies = [
+    "mph>=1.2",
+    "pyyaml>=6",
+]
+
+[project.scripts]
+roomlab = "roomlab.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

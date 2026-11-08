@@ -1,0 +1,8 @@
+---
+description: How to change and run the living-room COMSOL model
+alwaysApply: true
+---
+
+Edit `cases/living_room.yaml` to change the living-room simulation. Leave `models/acoustics-of-a-living-room/living_room_acoustics_llrevit.mph` unchanged, and use the COMSOL 6.2 file only.
+
+Run `roomlab check`, then `roomlab run cases/living_room.yaml`, from the repo root on the machine where COMSOL 6.2 is installed. Answer from `results/<run>/summary.md`. Keep `f0` at `100[Hz]` unless the user asks for another frequency. Above 300 Hz, pass `--allow-high-frequency` only after the user agrees.
