@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+results/
+
+# Gallery download. The mph file is over GitHub's 100 MB limit.
+models/acoustics-of-a-living-room/*
+!models/acoustics-of-a-living-room/.gitkeep
